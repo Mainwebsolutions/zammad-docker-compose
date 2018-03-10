@@ -1,7 +1,5 @@
 zammad-backup:
   command: ["zammad-backup"]
-  depends_on:
-    - zammad-railsserver
   entrypoint: /usr/local/bin/backup.sh
   image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
   links:
@@ -19,8 +17,6 @@ zammad-elasticsearch:
 
 zammad-init:
   command: ["zammad-init"]
-  depends_on:
-    - zammad-postgresql
   image: ${IMAGE_REPO}:zammad${VERSION}
   links:
     - zammad-elasticsearch
@@ -36,8 +32,6 @@ zammad-memcached:
 
 zammad-nginx:
   command: ["zammad-nginx"]
-  depends_on:
-    - zammad-railsserver
   image: ${IMAGE_REPO}:zammad${VERSION}
   links:
     - zammad-railsserver
@@ -56,9 +50,6 @@ zammad-postgresql:
 
 zammad-railsserver:
   command: ["zammad-railsserver"]
-  depends_on:
-    - zammad-memcached
-    - zammad-postgresql
   image: ${IMAGE_REPO}:zammad${VERSION}
   links:
     - zammad-elasticsearch
@@ -70,9 +61,6 @@ zammad-railsserver:
 
 zammad-scheduler:
   command: ["zammad-scheduler"]
-  depends_on:
-    - zammad-memcached
-    - zammad-railsserver
   image: ${IMAGE_REPO}:zammad${VERSION}
   links:
     - zammad-elasticsearch
@@ -84,9 +72,6 @@ zammad-scheduler:
 
 zammad-websocket:
   command: ["zammad-websocket"]
-  depends_on:
-    - zammad-memcached
-    - zammad-railsserver
   image: ${IMAGE_REPO}:zammad${VERSION}
   links:
     - zammad-postgresql
