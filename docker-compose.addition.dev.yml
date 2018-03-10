@@ -1,0 +1,8 @@
+version: '2'
+services:
+
+  zammad-nginx:
+    ports:
+        - '1121:80'
+    networks:
+        - default

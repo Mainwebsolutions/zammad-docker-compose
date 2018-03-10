@@ -43,5 +43,5 @@ Like this, you can add your `docker-compose.prod.yml` to a branch of your Git re
 
 ## build / run MWS-Helpdesk
 
-* Execute `make build` do build / run the helpdesk.
-* `make build` execute the following command: `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
+* Execute `make build-prod` to build / run the production helpdesk.
+* Execute `make build-dev` to build / run the development helpdesk.
