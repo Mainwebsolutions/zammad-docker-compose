@@ -40,3 +40,8 @@ Like this, you can add your `docker-compose.prod.yml` to a branch of your Git re
 ## Using Rancher
 
 * RANCHER_URL=http://RANCHER_HOST:8080 rancher-compose --env-file=.env up
+
+## build / run MWS-Helpdesk
+
+* Execute `make build` do build / run the helpdesk.
+* `make build` execute the following command: `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d`
