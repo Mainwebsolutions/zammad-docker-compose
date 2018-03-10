@@ -1,11 +1,6 @@
-version: '2'
-services:
-
-  zammad-nginx:
-    environment:
-        - 'VIRTUAL_HOST=helpdesk.wegi-gmbh.de'
-        - 'VIRTUAL_PORT=80'
-        - 'LETSENCRYPT_HOST=helpdesk.wegi-gmbh.de'
-        - 'LETSENCRYPT_EMAIL=info@mainwebsolutions.de'
-    networks:
-        - default
+zammad-nginx:
+  environment:
+      - 'VIRTUAL_HOST=helpdesk.wegi-gmbh.de'
+      - 'VIRTUAL_PORT=80'
+      - 'LETSENCRYPT_HOST=helpdesk.wegi-gmbh.de'
+      - 'LETSENCRYPT_EMAIL=info@mainwebsolutions.de'
