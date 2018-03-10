@@ -1,4 +1,7 @@
-zammad-nginx:
+version: '2'
+services:
+
+  zammad-nginx:
     environment:
         - 'VIRTUAL_HOST=helpdesk.mainwebsolutions.de'
         - 'VIRTUAL_PORT=7990'
