@@ -45,3 +45,11 @@ Like this, you can add your `docker-compose.prod.yml` to a branch of your Git re
 
 * Execute `make build-prod` to build / run the production helpdesk.
 * Execute `make build-dev` to build / run the development helpdesk.
+
+
+* Execute `make update-build-prod` to update the production helpdesk.
+* Execute `make update-build-dev` to update the development helpdesk.
+
+
+* Execute `make shutdown-prod` to shutdown the production helpdesk.
+* Execute `make shutdown-dev` to shutdown the development helpdesk.
