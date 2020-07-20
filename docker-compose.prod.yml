@@ -6,14 +6,14 @@ zammad-backup:
     - zammad-postgresql
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/zammad-backup:/var/tmp/zammad
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-backup:/var/tmp/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
 
 zammad-elasticsearch:
   image: ${IMAGE_REPO}:zammad-elasticsearch${VERSION}
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/elasticsearch-data:/usr/share/elasticsearch/data
+    - /storage-zammad/zammad/elasticsearch-data:/usr/share/elasticsearch/data
 
 zammad-init:
   command: ["zammad-init"]
@@ -23,7 +23,7 @@ zammad-init:
     - zammad-postgresql
   restart: on-failure
   volumes:
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
 
 zammad-memcached:
   command: ["zammad-memcached"]
@@ -38,7 +38,7 @@ zammad-nginx:
     - zammad-websocket
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
   expose:
     - "80"
 
@@ -46,7 +46,7 @@ zammad-postgresql:
   image: ${IMAGE_REPO}:zammad-postgresql${VERSION}
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/postgresql-data:/var/lib/postgresql/data
+    - /storage-zammad/zammad/postgresql-data:/var/lib/postgresql/data
 
 zammad-railsserver:
   command: ["zammad-railsserver"]
@@ -57,7 +57,7 @@ zammad-railsserver:
     - zammad-postgresql
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
 
 zammad-scheduler:
   command: ["zammad-scheduler"]
@@ -68,7 +68,7 @@ zammad-scheduler:
     - zammad-postgresql
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
 
 zammad-websocket:
   command: ["zammad-websocket"]
@@ -78,4 +78,4 @@ zammad-websocket:
     - zammad-memcached
   restart: always
   volumes:
-    - /srv/data/wegi/zammad/zammad-data:/opt/zammad
+    - /storage-zammad/zammad/zammad-data:/opt/zammad
