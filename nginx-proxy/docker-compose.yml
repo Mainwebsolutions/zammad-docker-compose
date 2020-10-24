@@ -1,0 +1,28 @@
+version: "2"
+
+services:
+  nginx-proxy:
+    network_mode: "bridge"
+    image: jwilder/nginx-proxy:0.4.0
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /storage-zammad/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - /storage-zammad/nginx-proxy/htpasswd:/etc/nginx/htpasswd
+      - /storage-zammad/nginx-proxy/html:/usr/share/nginx/html
+      - /storage-zammad/nginx-proxy/certs:/etc/nginx/certs
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /storage-zammad/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - /storage-zammad/nginx-proxy/htpasswd:/etc/nginx/htpasswd
+      - /storage-zammad/nginx-proxy/html:/usr/share/nginx/html
+      - /storage-zammad/nginx-proxy/certs:/etc/nginx/certs

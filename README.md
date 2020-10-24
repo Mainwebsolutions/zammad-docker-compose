@@ -72,3 +72,16 @@ CREATE USER zammad;
 ALTER USER zammad WITH PASSWORD 'zammad';
 ALTER USER zammad WITH SUPERUSER CREATEDB;
 ```
+
+## build / run MWS-Helpdesk
+
+* Execute `make build-prod` to build / run the production helpdesk.
+* Execute `make build-dev` to build / run the development helpdesk.
+
+
+* Execute `make update-build-prod` to update the production helpdesk.
+* Execute `make update-build-dev` to update the development helpdesk.
+
+
+* Execute `make shutdown-prod` to shutdown the production helpdesk.
+* Execute `make shutdown-dev` to shutdown the development helpdesk.
