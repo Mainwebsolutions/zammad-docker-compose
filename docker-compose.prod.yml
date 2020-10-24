@@ -31,6 +31,7 @@ zammad-init:
   links:
     - zammad-elasticsearch
     - zammad-postgresql
+    - zammad-memcached
   restart: on-failure
   volumes:
     - /storage-zammad/zammad/zammad-data:/opt/zammad
