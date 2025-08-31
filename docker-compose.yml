@@ -1,5 +1,5 @@
 ---
-version: '3.8'
+version: "3.8"
 
 x-shared:
   zammad-service: &zammad-service
@@ -13,6 +13,7 @@ x-shared:
       POSTGRESQL_OPTIONS: ${POSTGRESQL_OPTIONS:-?pool=50}
       POSTGRESQL_DB_CREATE:
       REDIS_URL: ${REDIS_URL:-redis://zammad-redis:6379}
+      S3_URL:
       # Backup settings
       BACKUP_DIR: "${BACKUP_DIR:-/var/tmp/zammad}"
       BACKUP_TIME: "${BACKUP_TIME:-03:00}"
@@ -22,21 +23,36 @@ x-shared:
       AUTOWIZARD_JSON:
       AUTOWIZARD_RELATIVE_PATH:
       ELASTICSEARCH_ENABLED:
+      ELASTICSEARCH_SCHEMA:
       ELASTICSEARCH_HOST:
       ELASTICSEARCH_PORT:
-      ELASTICSEARCH_SCHEMA:
+      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER:-elastic}
+      ELASTICSEARCH_PASS: ${ELASTICSEARCH_PASS:-zammad}
       ELASTICSEARCH_NAMESPACE:
       ELASTICSEARCH_REINDEX:
-      ELASTICSEARCH_SSL_VERIFY:
       NGINX_PORT:
+      NGINX_CLIENT_MAX_BODY_SIZE:
       NGINX_SERVER_NAME:
       NGINX_SERVER_SCHEME:
       RAILS_TRUSTED_PROXIES:
+      ZAMMAD_HTTP_TYPE:
+      ZAMMAD_FQDN:
       ZAMMAD_WEB_CONCURRENCY:
-      ZAMMAD_SESSION_JOBS:
-      ZAMMAD_PROCESS_SCHEDULED:
+      ZAMMAD_PROCESS_SESSIONS_JOBS_WORKERS:
+      ZAMMAD_PROCESS_SCHEDULED_JOBS_WORKERS:
       ZAMMAD_PROCESS_DELAYED_JOBS_WORKERS:
-    image: ${IMAGE_REPO:-ghcr.io/zammad/zammad}:${VERSION:-6.3.1-196}
+      # ZAMMAD_SESSION_JOBS_CONCURRENT is deprecated, please use ZAMMAD_PROCESS_SESSIONS_JOBS_WORKERS instead.
+      ZAMMAD_SESSION_JOBS_CONCURRENT:
+      # Variables used by ngingx-proxy container for reverse proxy creations
+      # for docs refer to https://github.com/nginx-proxy/nginx-proxy
+      VIRTUAL_HOST:
+      VIRTUAL_PORT:
+      # Variables used by acme-companion for retrieval of LetsEncrypt certificate
+      # for docs refer to https://github.com/nginx-proxy/acme-companion
+      LETSENCRYPT_HOST:
+      LETSENCRYPT_EMAIL:
+
+    image: ${IMAGE_REPO:-ghcr.io/zammad/zammad}:${VERSION:-6.5.0-101}
     restart: ${RESTART:-always}
     volumes:
       - zammad-storage:/opt/zammad/storage
@@ -46,7 +62,6 @@ x-shared:
       - zammad-redis
 
 services:
-
   zammad-backup:
     <<: *zammad-service
     command: ["zammad-backup"]
@@ -56,10 +71,26 @@ services:
     user: 0:0
 
   zammad-elasticsearch:
-    image: bitnami/elasticsearch:${ELASTICSEARCH_VERSION:-8.15.2}
+    image: bitnami/elasticsearch:${ELASTICSEARCH_VERSION:-8.18.0}
     restart: ${RESTART:-always}
     volumes:
       - ${VOLUME_BASE_PATH}/elasticsearch-data:/bitnami/elasticsearch/data
+    environment:
+      # See https://github.com/bitnami/containers/tree/main/bitnami/elasticsearch#environment-variables
+      #
+      # Enable authorization without HTTPS. For external access with
+      #   SSL termination, use solutions like nginx-proxy-manager.
+      ELASTICSEARCH_ENABLE_SECURITY: 'true'
+      ELASTICSEARCH_SKIP_TRANSPORT_TLS: 'true'
+      ELASTICSEARCH_ENABLE_REST_TLS: 'false'
+      # ELASTICSEARCH_USER is hardcoded to 'elastic' in the container.
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASS:-zammad}
+      # Resource settings
+      ELASTICSEARCH_HEAP_SIZE:
+      ELASTICSEARCH_MAX_ALLOWED_MEMORY_PERCENTAGE:
+      ELASTICSEARCH_MAX_ALLOWED_MEMORY:
+      ELASTICSEARCH_MAX_TIMEOUT:
+      ELASTICSEARCH_LOCK_ALL_MEMORY:
 
   zammad-init:
     <<: *zammad-service
@@ -71,7 +102,7 @@ services:
 
   zammad-memcached:
     command: memcached -m 256M
-    image: memcached:${MEMCACHE_VERSION:-1.6.31-alpine}
+    image: memcached:${MEMCACHE_VERSION:-1.6.38-alpine}
     restart: ${RESTART:-always}
 
   zammad-nginx:
@@ -89,7 +120,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-zammad_production}
       POSTGRES_USER: ${POSTGRES_USER:-zammad}
       POSTGRES_PASSWORD: ${POSTGRES_PASS:-zammad}
-    image: postgres:${POSTGRES_VERSION:-15.8-alpine}
+    image: postgres:${POSTGRES_VERSION:-17.5-alpine}
     restart: ${RESTART:-always}
     volumes:
       - ${VOLUME_BASE_PATH}/postgresql-data:/var/lib/postgresql/data
@@ -99,7 +130,7 @@ services:
     command: ["zammad-railsserver"]
 
   zammad-redis:
-    image: redis:${REDIS_VERSION:-7.4.1-alpine}
+    image: redis:${REDIS_VERSION:-7.4.4-alpine}
     restart: ${RESTART:-always}
     volumes:
       - redis-data:/data
