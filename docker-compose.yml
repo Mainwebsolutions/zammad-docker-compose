@@ -26,8 +26,8 @@ x-shared:
       ELASTICSEARCH_SCHEMA:
       ELASTICSEARCH_HOST:
       ELASTICSEARCH_PORT:
-      ELASTICSEARCH_USER: ${ELASTICSEARCH_USER:-elastic}
-      ELASTICSEARCH_PASS: ${ELASTICSEARCH_PASS:-zammad}
+      ELASTICSEARCH_USER:
+      ELASTICSEARCH_PASS:
       ELASTICSEARCH_NAMESPACE:
       ELASTICSEARCH_REINDEX:
       NGINX_PORT:
@@ -52,10 +52,10 @@ x-shared:
       LETSENCRYPT_HOST:
       LETSENCRYPT_EMAIL:
 
-    image: ${IMAGE_REPO:-ghcr.io/zammad/zammad}:${VERSION:-6.5.0-101}
+    image: ${IMAGE_REPO:-ghcr.io/zammad/zammad}:${VERSION:-6.5.1}
     restart: ${RESTART:-always}
     volumes:
-      - zammad-storage:/opt/zammad/storage
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/storage
     depends_on:
       - zammad-memcached
       - zammad-postgresql
@@ -71,26 +71,14 @@ services:
     user: 0:0
 
   zammad-elasticsearch:
-    image: bitnami/elasticsearch:${ELASTICSEARCH_VERSION:-8.18.0}
+    image: elasticsearch:${ELASTICSEARCH_VERSION:-8.19.2}
     restart: ${RESTART:-always}
     volumes:
-      - ${VOLUME_BASE_PATH}/elasticsearch-data:/bitnami/elasticsearch/data
+      - ${VOLUME_BASE_PATH}/elasticsearch-data:/usr/share/elasticsearch/data
     environment:
-      # See https://github.com/bitnami/containers/tree/main/bitnami/elasticsearch#environment-variables
-      #
-      # Enable authorization without HTTPS. For external access with
-      #   SSL termination, use solutions like nginx-proxy-manager.
-      ELASTICSEARCH_ENABLE_SECURITY: 'true'
-      ELASTICSEARCH_SKIP_TRANSPORT_TLS: 'true'
-      ELASTICSEARCH_ENABLE_REST_TLS: 'false'
-      # ELASTICSEARCH_USER is hardcoded to 'elastic' in the container.
-      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASS:-zammad}
-      # Resource settings
-      ELASTICSEARCH_HEAP_SIZE:
-      ELASTICSEARCH_MAX_ALLOWED_MEMORY_PERCENTAGE:
-      ELASTICSEARCH_MAX_ALLOWED_MEMORY:
-      ELASTICSEARCH_MAX_TIMEOUT:
-      ELASTICSEARCH_LOCK_ALL_MEMORY:
+      discovery.type: single-node
+      xpack.security.enabled: 'false'
+      ES_JAVA_OPTS: ${ELASTICSEARCH_JAVA_OPTS:--Xms1g -Xmx1g}
 
   zammad-init:
     <<: *zammad-service
@@ -102,7 +90,7 @@ services:
 
   zammad-memcached:
     command: memcached -m 256M
-    image: memcached:${MEMCACHE_VERSION:-1.6.38-alpine}
+    image: memcached:${MEMCACHE_VERSION:-1.6.39-alpine}
     restart: ${RESTART:-always}
 
   zammad-nginx:
@@ -130,7 +118,7 @@ services:
     command: ["zammad-railsserver"]
 
   zammad-redis:
-    image: redis:${REDIS_VERSION:-7.4.4-alpine}
+    image: redis:${REDIS_VERSION:-7.4.5-alpine}
     restart: ${RESTART:-always}
     volumes:
       - redis-data:/data
