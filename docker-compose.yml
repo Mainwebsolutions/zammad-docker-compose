@@ -25,6 +25,7 @@ x-shared:
       NGINX_SERVER_NAME:
       NGINX_SERVER_SCHEME:
       POSTGRESQL_DB_CREATE:
+      POSTGRESQL_OPTIONS:
       RAILS_TRUSTED_PROXIES:
       ZAMMAD_WEB_CONCURRENCY:
       ZAMMAD_SESSION_JOBS:
@@ -33,7 +34,7 @@ x-shared:
     image: ${IMAGE_REPO}:${VERSION}
     restart: ${RESTART}
     volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var
+      - zammad-storage:/opt/zammad/storage
     depends_on:
       - zammad-memcached
       - zammad-postgresql
@@ -56,7 +57,7 @@ services:
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/zammad-backup:/var/tmp/zammad
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var:ro
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/storage:ro
       - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
 
   zammad-elasticsearch:
@@ -73,8 +74,7 @@ services:
     restart: on-failure
     user: 0:0
     volumes:
-      - zammad-config-nginx:/etc/nginx/sites-enabled
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/storage
 
   zammad-memcached:
     command: memcached -m 256M
@@ -88,9 +88,6 @@ services:
       - "8080"
     depends_on:
       - zammad-railsserver
-    volumes:
-      - zammad-config-nginx:/etc/nginx/sites-enabled:ro
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var:ro
 
   zammad-postgresql:
     environment:
@@ -129,7 +126,5 @@ volumes:
     driver: local
   zammad-backup:
     driver: local
-  zammad-config-nginx:
-    driver: local
-  zammad-var:
+  zammad-storage:
     driver: local

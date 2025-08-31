@@ -1,6 +1,8 @@
 ---
 name: ci-remote-image
 
+permissions: read-all
+
 on:
   pull_request:
 
@@ -10,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: pull docker-compose images
         run: docker-compose pull
@@ -19,7 +21,7 @@ jobs:
         run: docker-compose up --detach
 
       - name: add autowizard file
-        run: docker cp .github/auto_wizard.json zammad-docker-compose_zammad-railsserver_1:/opt/zammad/var
+        run: docker cp .github/auto_wizard.json zammad-docker-compose_zammad-railsserver_1:/opt/zammad/tmp
 
       - name: run tests
         run: .github/tests.sh
