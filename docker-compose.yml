@@ -21,7 +21,7 @@ services:
       - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
 
   zammad-elasticsearch:
-    image: bitnami/elasticsearch:8.5.0
+    image: bitnami/elasticsearch:8.5.1
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/elasticsearch-data:/bitnami/elasticsearch/data
@@ -60,7 +60,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASS}
-    image: postgres:15.0-alpine
+    image: postgres:15.1-alpine
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/postgresql-data:/var/lib/postgresql/data
@@ -80,7 +80,7 @@ services:
       - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
 
   zammad-redis:
-    image: redis:6.2.5-alpine
+    image: redis:7.0.5-alpine
     restart: ${RESTART}
 
   zammad-scheduler:
