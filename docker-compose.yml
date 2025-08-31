@@ -1,4 +1,43 @@
-version: '3'
+---
+version: '3.8'
+
+x-shared:
+  zammad-service: &zammad-service
+    environment: &zammad-environment
+      MEMCACHE_SERVERS: ${MEMCACHE_SERVERS}
+      POSTGRESQL_DB: ${POSTGRES_DB}
+      POSTGRESQL_HOST: ${POSTGRES_HOST}
+      POSTGRESQL_USER: ${POSTGRES_USER}
+      POSTGRESQL_PASS: ${POSTGRES_PASS}
+      POSTGRESQL_PORT: ${POSTGRES_PORT}
+      REDIS_URL: ${REDIS_URL}
+      # Allow passing in these variables via .env:
+      AUTOWIZARD_JSON:
+      AUTOWIZARD_RELATIVE_PATH:
+      ELASTICSEARCH_ENABLED:
+      ELASTICSEARCH_HOST:
+      ELASTICSEARCH_PORT:
+      ELASTICSEARCH_SCHEMA:
+      ELASTICSEARCH_NAMESPACE:
+      ELASTICSEARCH_REINDEX:
+      ELASTICSEARCH_SSL_VERIFY:
+      NGINX_PORT:
+      NGINX_SERVER_NAME:
+      NGINX_SERVER_SCHEME:
+      POSTGRESQL_DB_CREATE:
+      RAILS_TRUSTED_PROXIES:
+      ZAMMAD_WEB_CONCURRENCY:
+      ZAMMAD_SESSION_JOBS:
+      ZAMMAD_PROCESS_SCHEDULED:
+      ZAMMAD_PROCESS_DELAYED_JOBS_WORKERS:
+    image: ${IMAGE_REPO}:${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var
+    depends_on:
+      - zammad-memcached
+      - zammad-postgresql
+      - zammad-redis
 
 services:
 
@@ -9,118 +48,88 @@ services:
       - zammad-postgresql
     entrypoint: /usr/local/bin/backup.sh
     environment:
-      - BACKUP_TIME=03:00
-      - HOLD_DAYS=10
-      - POSTGRESQL_DB=${POSTGRES_DB}
-      - POSTGRESQL_USER=${POSTGRES_USER}
-      - POSTGRESQL_PASSWORD=${POSTGRES_PASS}
-      - TZ=Europe/Berlin
+      <<: *zammad-environment
+      BACKUP_TIME: "03:00"
+      HOLD_DAYS: "10"
+      TZ: Europe/Berlin
     image: postgres:${POSTGRES_VERSION}
     restart: ${RESTART}
     volumes:
-      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
       - ${VOLUME_BASE_PATH}/zammad-backup:/var/tmp/zammad
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var:ro
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
 
   zammad-elasticsearch:
-    image: bitnami/elasticsearch:8.5.1
+    image: bitnami/elasticsearch:${ELASTICSEARCH_VERSION}
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/elasticsearch-data:/bitnami/elasticsearch/data
 
   zammad-init:
+    <<: *zammad-service
     command: ["zammad-init"]
     depends_on:
       - zammad-postgresql
-    environment:
-      - MEMCACHE_SERVERS=${MEMCACHE_SERVERS}
-      - POSTGRESQL_DB=${POSTGRES_DB}
-      - POSTGRESQL_USER=${POSTGRES_USER}
-      - POSTGRESQL_PASS=${POSTGRES_PASS}
-      - REDIS_URL=${REDIS_URL}
-    image: ${IMAGE_REPO}:${VERSION}
     restart: on-failure
+    user: 0:0
     volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
+      - zammad-config-nginx:/etc/nginx/sites-enabled
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var
 
   zammad-memcached:
     command: memcached -m 256M
-    image: memcached:1.6.17-alpine
+    image: memcached:${MEMCACHE_VERSION}
     restart: ${RESTART}
 
   zammad-nginx:
+    <<: *zammad-service
     command: ["zammad-nginx"]
     expose:
       - "8080"
     depends_on:
       - zammad-railsserver
-    image: ${IMAGE_REPO}:${VERSION}
-    restart: ${RESTART}
     volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
+      - zammad-config-nginx:/etc/nginx/sites-enabled:ro
+      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad/var:ro
 
   zammad-postgresql:
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
     image: postgres:${POSTGRES_VERSION}
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/postgresql-data:/var/lib/postgresql/data
 
   zammad-railsserver:
+    <<: *zammad-service
     command: ["zammad-railsserver"]
-    depends_on:
-      - zammad-memcached
-      - zammad-postgresql
-      - zammad-redis
-    environment:
-      - MEMCACHE_SERVERS=${MEMCACHE_SERVERS}
-      - REDIS_URL=${REDIS_URL}
-    image: ${IMAGE_REPO}:${VERSION}
-    restart: ${RESTART}
-    volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
 
   zammad-redis:
-    image: redis:7.0.5-alpine
+    image: redis:${REDIS_VERSION}
     restart: ${RESTART}
+    volumes:
+      - redis-data:/data
 
   zammad-scheduler:
+    <<: *zammad-service
     command: ["zammad-scheduler"]
-    depends_on:
-      - zammad-memcached
-      - zammad-railsserver
-      - zammad-redis
-    environment:
-      - MEMCACHE_SERVERS=${MEMCACHE_SERVERS}
-      - REDIS_URL=${REDIS_URL}
-    image: ${IMAGE_REPO}:${VERSION}
-    restart: ${RESTART}
-    volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
 
   zammad-websocket:
+    <<: *zammad-service
     command: ["zammad-websocket"]
-    depends_on:
-      - zammad-memcached
-      - zammad-railsserver
-      - zammad-redis
-    environment:
-      - MEMCACHE_SERVERS=${MEMCACHE_SERVERS}
-      - REDIS_URL=${REDIS_URL}
-    image: ${IMAGE_REPO}:${VERSION}
-    restart: ${RESTART}
-    volumes:
-      - ${VOLUME_BASE_PATH}/zammad-data:/opt/zammad
 
 volumes:
   elasticsearch-data:
     driver: local
   postgresql-data:
     driver: local
+  redis-data:
+    driver: local
   zammad-backup:
     driver: local
-  zammad-data:
+  zammad-config-nginx:
+    driver: local
+  zammad-var:
     driver: local
