@@ -11,6 +11,7 @@ services:
     environment:
       - BACKUP_TIME=03:00
       - HOLD_DAYS=10
+      - POSTGRESQL_DB=${POSTGRES_DB}
       - POSTGRESQL_USER=${POSTGRES_USER}
       - POSTGRESQL_PASSWORD=${POSTGRES_PASS}
       - TZ=Europe/Berlin
@@ -33,6 +34,7 @@ services:
       - zammad-postgresql
     environment:
       - MEMCACHE_SERVERS=${MEMCACHE_SERVERS}
+      - POSTGRESQL_DB=${POSTGRES_DB}
       - POSTGRESQL_USER=${POSTGRES_USER}
       - POSTGRESQL_PASS=${POSTGRES_PASS}
       - REDIS_URL=${REDIS_URL}
@@ -59,6 +61,7 @@ services:
 
   zammad-postgresql:
     environment:
+      - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASS}
     image: postgres:${POSTGRES_VERSION}
