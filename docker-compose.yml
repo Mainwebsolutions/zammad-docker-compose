@@ -13,7 +13,7 @@ services:
       - HOLD_DAYS=10
       - POSTGRESQL_USER=${POSTGRES_USER}
       - POSTGRESQL_PASSWORD=${POSTGRES_PASS}
-    image: postgres:15.0-alpine
+    image: postgres:${POSTGRES_VERSION}
     restart: ${RESTART}
     volumes:
       - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
@@ -60,7 +60,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASS}
-    image: postgres:15.1-alpine
+    image: postgres:${POSTGRES_VERSION}
     restart: ${RESTART}
     volumes:
       - ${VOLUME_BASE_PATH}/postgresql-data:/var/lib/postgresql/data
