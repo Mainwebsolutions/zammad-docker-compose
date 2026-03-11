@@ -124,7 +124,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-zammad_production}
       POSTGRES_USER: ${POSTGRES_USER:-zammad}
       POSTGRES_PASSWORD: ${POSTGRES_PASS:-zammad}
-    image: postgres:${POSTGRES_VERSION:-17.9-alpine}
+    image: postgres:${POSTGRES_VERSION:-17.5-alpine}
     restart: ${RESTART:-always}
     volumes:
       - ${VOLUME_BASE_PATH}/postgresql-data:/var/lib/postgresql/data
