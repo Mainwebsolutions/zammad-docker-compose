@@ -16,7 +16,7 @@ shutdown-prod:
 build-prod:
 	@echo
 	@echo "+++ shutdown Helpdesk +++"
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+	docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
 
 start-stg:
 	@echo
